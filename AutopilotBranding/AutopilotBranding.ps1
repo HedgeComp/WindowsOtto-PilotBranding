@@ -23,6 +23,8 @@ if ("$env:PROCESSOR_ARCHITEW6432" -ne "ARM64")
 if (-not (Test-Path "$($env:ProgramData)\Microsoft\AutopilotBranding"))
 {
     Mkdir "$($env:ProgramData)\Microsoft\AutopilotBranding" -Force
+	Set-Content -Path "$($env:ProgramData)\Microsoft\AutopilotBranding\AutopilotBranding.ps1.tag" -Value "Installed"
+
 }
 
 # Start logging
@@ -73,11 +75,20 @@ reg.exe add "HKLM\TempUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Ad
 # STEP 2B: Hide "Learn more about this picture" from the desktop
 reg.exe add "HKLM\TempUser\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{2cc5ca98-6485-489a-920e-b3e88a6ccce3}" /t REG_DWORD /d 1 /f | Out-Host
 
-# STEP 3C: Disable Windows Spotlight as per https://github.com/mtniehaus/AutopilotBranding/issues/13#issuecomment-2449224828
+# STEP 2C: Disable Windows Spotlight as per https://github.com/mtniehaus/AutopilotBranding/issues/13#issuecomment-2449224828
 Log "Disabling Windows Spotlight for Desktop"
 reg.exe add "HKLM\TempUser\Software\Policies\Microsoft\Windows\CloudContent" /v DisableSpotlightCollectionOnDesktop /t REG_DWORD /d 1 /f | Out-Host
 
+# STEP 2D: Disable Windows Spotlight on LockScreen
+reg.exe add "HKLM\TempUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'RotatingLockScreenOverlayEnabled' /t REG_DWORD /d 0 /f | Out-Null
+
 reg.exe unload HKLM\TempUser | Out-Host
+
+#STEP 2E: #Disable the Animations when loggin new " Please wait, We're almost done..."
+#Can be set as Intune Policy aswell this makes sure its set at first login after Autopilot completes
+Log "Diable First Time Logon Animations"
+$regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+New-ItemProperty -Path $regPath -Name EnableFirstLogonAnimation -Value 0 -type DWord
 
 # STEP 3: Set time zone (if specified)
 if ($config.Config.TimeZone) {
@@ -116,8 +127,12 @@ if ($config.Config.OneDriveSetup) {
 	Log "OneDriveSetup exit code: $($proc.ExitCode)"
 }
 
+#STEP 5A: Exclude Shortcuts from Syncing in OneDrive.
+reg.exe add "HKLM\Software\Policies\Microsoft\OneDrive" /v ExcludedFileExtensions /t REG_SZ /d ".lnk" /f
+
 # STEP 6: Don't let Edge create a desktop shortcut (roams to OneDrive, creates mess)
 Log "Turning off (old) Edge desktop shortcut"
+if (Test-Path "C:\Users\Public\Desktop\Microsoft Edge.lnk") { Remove-Item "C:\Users\Public\Desktop\Microsoft Edge.lnk" -Force }
 reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" /v DisableEdgeDesktopShortcutCreation /t REG_DWORD /d 1 /f /reg:64 | Out-Host
 
 # STEP 7: Add language packs
@@ -178,6 +193,7 @@ if ($currentWU -eq 1)
 	Restart-Service wuauserv
 }
 
+<#i
 # STEP 10: Customize default apps
 if ($config.Config.DefaultApps) {
 	Log "Setting default apps: $($config.Config.DefaultApps)"
@@ -190,7 +206,7 @@ reg.exe add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v RegisteredOwn
 reg.exe add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v RegisteredOrganization /t REG_SZ /d "$($config.Config.RegisteredOrganization)" /f /reg:64 | Out-Host
 
 # STEP 12: Configure OEM branding info
-if ($config.Config.OEMInfo)
+f ($config.Config.OEMInfo)
 {
 	Log "Configuring OEM branding info"
 
@@ -203,6 +219,7 @@ if ($config.Config.OEMInfo)
 	reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v Logo /t REG_SZ /d "C:\Windows\$($config.Config.OEMInfo.Logo)" /f /reg:64 | Out-Host
 }
 
+
 # STEP 13: Enable UE-V
 Log "Enabling UE-V"
 Enable-UEV
@@ -212,12 +229,139 @@ Get-ChildItem "$($installFolder)UEV" -Filter *.xml | % {
 	Register-UevTemplate -Path $_.FullName
 }
 
+#>
+
 # STEP 14: Disable network location fly-out
 Log "Turning off network location fly-out"
 reg.exe add "HKLM\SYSTEM\CurrentControlSet\Control\Network\NewNetworkWindowOff" /f
+ 
+reg load HKU\Default C:\Users\Default\NTUSER.DAT
 
-# STEP 15: Disable new Edge desktop icon
-Log "Turning off Edge desktop icon"
-reg.exe add "HKLM\SOFTWARE\Policies\Microsoft\EdgeUpdate" /v "CreateDesktopShortcutDefault" /t REG_DWORD /d 0 /f /reg:64 | Out-Host
+# STEP 16: Remove Searchbar for all users new Way as of Win 11 23h2 thanks to SweJorgen and Woody over on GetRUbix Discord for pointing me to this. Create a run once to set the SearchTaskbarMode, recommend 0 or 1
+Log "Setting Searchbox to Icon Only"
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\RunOnce" /f | Out-Null
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\RunOnce" /v 'RemoveSearch' /t REG_SZ /d "reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Search /t REG_DWORD /v SearchboxTaskbarMode /d 1 /f" /f
+
+# STEP 17: Disable Taskview and Chat Button
+Log "Disabling Chat and Taskview Icons"
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d 0 /f
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowTaskViewButton" /t REG_DWORD /d 0 /f
+
+# STEP 17A : Remove Widget
+#Remove Widgets New Work around October 2024, Tested with Win 11 24H2
+Log "Hidding Widgets on Taskbar"
+copy-item (Get-Command reg).Source .\reg1.exe
+.\reg1.exe load HKU\Default C:\Users\Default\NTUSER.DAT
+.\reg1.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarDa" /t REG_DWORD /d 0 /f
+.\reg1.exe unload HKU\Default
+remove-item .\reg1.exe
+
+# STEP 18: Setup Left StartMenu Alignment
+Log "Set Left Start Menu Alignment"
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value "0" -PropertyType Dword
+
+#STEP 18A: Right Click Context Menu restore
+reg add "HKU\Default\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /ve /f
+
+#STEP 18B: Show "Run as different User" in context menu
+reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v ShowRunAsDifferentUserInStart /t REG_DWORD /d 1 /f | Out-Null
+
+# STEP 19: Revove Bing
+Log "Remove Bing from Start Menu"
+reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /f |Out-Null
+reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v ShowRunAsDifferentUserInStart /t REG_DWORD /d 1 /f | Out-Null
+reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v DisableSearchBoxSuggestions /t REG_DWORD /d 1 /f | Out-Null
+
+#STEP 20: REmove adds and suggestions in Windows where possible.
+Log " Disable Tips Recommendations for new Apps"
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_IrisRecommendations" /t REG_DWORD /d 0 /f
+#STEP 20A:Disable SPonsered Apps like Spotify or the Candy Crushes from coming back or silently installing
+Log "Disabling Sponsored Apps"
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SubscribedContentEnabled' /t REG_DWORD /d 0 /f  | Out-Null
+reg.exe add "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'PreInstalledAppsEnabled' /t REG_DWORD /d 0 /f  | Out-Null
+reg.exe add "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SilentInstalledAppsEnabled' /t REG_DWORD /d 0 /f  | Out-Null
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'ContentDeliveryAllowed' /t REG_DWORD /d 0 /f  | Out-Null
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'OemPreInstalledAppsEnabled' /t REG_DWORD /d 0 /f  | Out-Null
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'PreInstalledAppsEverEnabled' /t REG_DWORD /d 0 /f  | Out-Null
+
+#STEP 20E: Disable Windows Tips 
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SoftLandingEnabled' /t REG_DWORD /d 0 /f | Out-Null
+
+#STEP 20B: Like what you see?" tips and suggestions appear on the Windows Spotlight lock screen Disable
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SubscribedContent-338387Enabled' /t REG_DWORD /d 0 /f  | Out-Null
+
+#STEP 20G:  Disable Windows Welcome Experience
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SubscribedContent-310093Enabled' /t REG_DWORD /d 0 /f  | Out-Null
+
+#STEP 20H: Disable ADs for apps in Start Menu
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SubscribedContent-338388Enabled' /t REG_DWORD /d 0 /f  | Out-Null
+
+#STEP 20C: To Turn Off "Get tips, tricks, and suggestions as you use Windows"
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SubscribedContent-338389Enabled' /t REG_DWORD /d 0 /f  | Out-Null
+
+#STEP 20D: Turn Off Suggested Content in Settings
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SubscribedContent-338393Enabled' /t REG_DWORD /d 0 /f  | Out-Null
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SubscribedContent-353694Enabled' /t REG_DWORD /d 0 /f  | Out-Null
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SubscribedContent-353696Enabled' /t REG_DWORD /d 0 /f  | Out-Null
+
+#STEP 20F: Turn Off App suggestions in Taksbar 
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SystemPaneSuggestionsEnabled' /t REG_DWORD /d 0 /f  | Out-Null
+
+#Unload the DEFUALT\User Hive
+reg unload HKU\Default
+
+# STEP 22: Disable Powersehll v2
+Log "Disabling PowerShell v2.0"
+try {
+    $PoShv2Enabled = Get-WindowsOptionalFeature -FeatureName "MicrosoftWindowsPowerShellV2Root" -Online | Select-Object -ExpandProperty State
+} catch {
+    Write-Error "Failed to get the state of the PowerShell v2.0 feature: : $($_.Exception.Message)"
+}
+if ($PoShv2Enabled -eq "Enabled") {
+    try {
+        Disable-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2Root -ErrorAction Continue -NoRestart
+    } catch {
+        Write-Error "Failed to disable the PowerShell v2.0 feature: $($_.Exception.Message)"
+    }
+}
+
+# STEP 23: Remove the registry keys for Dev Home and Outlook New
+# This is a workaround for the issue where the Dev Home and Outlook New apps are installed by default from https://github.com/mtniehaus/AutopilotBranding/pull/20
+Log "Disabling Windows 11 Dev Home and Outlook New"
+$DevHome = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\DevHomeUpdate"
+$OutlookNew = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\OutlookUpdate"
+if (Test-Path -Path $DevHome) {
+    Log "Found --> Removing DevHome"
+    Remove-Item -Path $DevHome -Force
+}
+if (Test-Path -Path $OutlookNew) {
+    Log "Found --> Removing Outlook NEW"
+    Remove-Item -Path $OutlookNew -Force
+}
+
+#STEP 24 Remove Pre-installed Office/ MS 365 
+#Some Vendors like Dell may deploy 3 language versions -EN -FR -ES. Try and remove all C2R versions of office products in one go.
+Log "Creating XML uninstaller"
+$xml = @"
+<Configuration>
+  <Display Level="None" AcceptEULA="True" />
+  <Property Name="FORCEAPPSHUTDOWN" Value="True" />
+  <Remove All="TRUE">
+  </Remove>
+</Configuration>
+"@
+
+##write XML to the debloat folder
+$xml | Out-File -FilePath "C:\ProgramData\Microsoft\AutopilotBranding\o365.xml"
+
+Log "Downloading ODT"
+##Download the ODT from Andrew Taylors Git. If you are forking you can publish your own or addjust code below to download the latest.
+$odturl = "https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/odt.exe"
+$odtdestination = "C:\ProgramData\Microsoft\AutopilotBranding\odt.exe"
+Invoke-WebRequest -Uri $odturl -OutFile $odtdestination -Method Get -UseBasicParsing
+
+##Run it
+Log "Running ODT"
+Start-Process -FilePath "C:\ProgramData\Microsoft\AutopilotBranding\odt.exe" -ArgumentList "/configure C:\ProgramData\Microsoft\AutopilotBranding\o365.xml" -Wait
 
 Stop-Transcript
