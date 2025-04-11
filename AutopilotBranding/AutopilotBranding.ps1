@@ -87,8 +87,11 @@ reg.exe unload HKLM\TempUser | Out-Host
 #STEP 2E: #Disable the Animations when loggin new " Please wait, We're almost done..."
 #Can be set as Intune Policy aswell this makes sure its set at first login after Autopilot completes
 Log "Diable First Time Logon Animations"
-$regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
-New-ItemProperty -Path $regPath -Name EnableFirstLogonAnimation -Value 0 -type DWord
+#$regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+#New-ItemProperty -Path $regPath -Name EnableFirstLogonAnimation -Value 0 -type DWord
+reg.exe add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableFirstLogonAnimation /t REG_DWORD /d 0 /f
+
+
 
 # STEP 3: Set time zone (if specified)
 if ($config.Config.TimeZone) {
@@ -122,7 +125,7 @@ if ($config.Config.OneDriveSetup) {
 	$client = new-object System.Net.WebClient
 	$client.DownloadFile($config.Config.OneDriveSetup, $dest)
 	Log "Installing: $dest"
-	$proc = Start-Process $dest -ArgumentList "/allusers" -WindowStyle Hidden -PassThru
+	$proc = Start-Process $dest -ArgumentList "/allusers /silent" -WindowStyle Hidden -PassThru
 	$proc.WaitForExit()
 	Log "OneDriveSetup exit code: $($proc.ExitCode)"
 }
@@ -244,31 +247,33 @@ reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\RunOnce" /v '
 
 # STEP 17: Disable Taskview and Chat Button
 Log "Disabling Chat and Taskview Icons"
-reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d 0 /f
-reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowTaskViewButton" /t REG_DWORD /d 0 /f
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d 0 /f | Out-Null
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowTaskViewButton" /t REG_DWORD /d 0 /f | Out-Null
 
 # STEP 17A : Remove Widget
 #Remove Widgets New Work around October 2024, Tested with Win 11 24H2
 Log "Hidding Widgets on Taskbar"
 copy-item (Get-Command reg).Source .\reg1.exe
-.\reg1.exe load HKU\Default C:\Users\Default\NTUSER.DAT
-.\reg1.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarDa" /t REG_DWORD /d 0 /f
-.\reg1.exe unload HKU\Default
+#.\reg1.exe load HKU\Default C:\Users\Default\NTUSER.DAT
+.\reg1.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarDa" /t REG_DWORD /d 0 /f | Out-Null
+#.\reg1.exe unload HKU\Default
+sleep 5
 remove-item .\reg1.exe
 
 # STEP 18: Setup Left StartMenu Alignment
 Log "Set Left Start Menu Alignment"
-reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value "0" -PropertyType Dword
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarAl /t REG_DWORD /d 0 /f | Out-Null
 
 #STEP 18A: Right Click Context Menu restore
-reg add "HKU\Default\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /ve /f
+reg add "HKU\Default\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f | Out-Null
+#reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
 
 #STEP 18B: Show "Run as different User" in context menu
 reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v ShowRunAsDifferentUserInStart /t REG_DWORD /d 1 /f | Out-Null
 
 # STEP 19: Revove Bing
 Log "Remove Bing from Start Menu"
-reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /f |Out-Null
+reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /f | Out-Null
 reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v ShowRunAsDifferentUserInStart /t REG_DWORD /d 1 /f | Out-Null
 reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v DisableSearchBoxSuggestions /t REG_DWORD /d 1 /f | Out-Null
 
@@ -278,8 +283,8 @@ reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Adva
 #STEP 20A:Disable SPonsered Apps like Spotify or the Candy Crushes from coming back or silently installing
 Log "Disabling Sponsored Apps"
 reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SubscribedContentEnabled' /t REG_DWORD /d 0 /f  | Out-Null
-reg.exe add "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'PreInstalledAppsEnabled' /t REG_DWORD /d 0 /f  | Out-Null
-reg.exe add "HKU\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SilentInstalledAppsEnabled' /t REG_DWORD /d 0 /f  | Out-Null
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'PreInstalledAppsEnabled' /t REG_DWORD /d 0 /f  | Out-Null
+reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'SilentInstalledAppsEnabled' /t REG_DWORD /d 0 /f  | Out-Null
 reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'ContentDeliveryAllowed' /t REG_DWORD /d 0 /f  | Out-Null
 reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'OemPreInstalledAppsEnabled' /t REG_DWORD /d 0 /f  | Out-Null
 reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v 'PreInstalledAppsEverEnabled' /t REG_DWORD /d 0 /f  | Out-Null
@@ -355,13 +360,15 @@ $xml = @"
 $xml | Out-File -FilePath "C:\ProgramData\Microsoft\AutopilotBranding\o365.xml"
 
 Log "Downloading ODT"
-##Download the ODT from Andrew Taylors Git. If you are forking you can publish your own or addjust code below to download the latest.
-$odturl = "https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/odt.exe"
+##Download the ODT from Git. If you are forking you can publish your own or addjust code below to download the latest.
+$ProgressPreference = 'SilentlyContinue'
+$odturl = "https://github.com/HedgeComp/WindowsOtto-PilotBranding/raw/main/ODT/odt.exe"
 $odtdestination = "C:\ProgramData\Microsoft\AutopilotBranding\odt.exe"
 Invoke-WebRequest -Uri $odturl -OutFile $odtdestination -Method Get -UseBasicParsing
+$ProgressPreference = 'Continue'
 
 ##Run it
 Log "Running ODT"
-Start-Process -FilePath "C:\ProgramData\Microsoft\AutopilotBranding\odt.exe" -ArgumentList "/configure C:\ProgramData\Microsoft\AutopilotBranding\o365.xml" -Wait
+Start-Process -FilePath "C:\ProgramData\Microsoft\AutopilotBranding\odt.exe" -ArgumentList "/configure C:\ProgramData\Microsoft\AutopilotBranding\o365.xml" -WindowStyle Hidden -Wait
 
 Stop-Transcript
