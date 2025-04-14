@@ -2,6 +2,7 @@
 
 This repository contains a sample PowerShell script that can be packaged into an Intune Win32 app to customize Windows 10 devices via Windows Autopilot
 (although there's no reason it can't be used with other deployment processes, e.g. MDT or ConfigMgr).
+It is a fork of Micheal Neihaus's amazing script with added bonuses from things I've learned from Community Pros like Sir Andy Talor and Steve Weiner.
 
 ## Capabilities
 
