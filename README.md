@@ -1,13 +1,16 @@
-# Autopilot Branding
+# Otto-Pilot Branding
 
-This repository contains a sample PowerShell script that can be packaged into an Intune Win32 app to customize Windows 10 devices via Windows Autopilot
+This is a custom fork of Micheal Neihaus's amazing script with added bonuses from things I've learned from Community Pros like Sir Andy Talor and Steve Weiner.
+This repository contains a sample PowerShell script that can be packaged into an Intune Win32 app to customize Windows 10 and 11 devices via Windows Autopilot
 (although there's no reason it can't be used with other deployment processes, e.g. MDT or ConfigMgr).
-It is a fork of Micheal Neihaus's amazing script with added bonuses from things I've learned from Community Pros like Sir Andy Talor and Steve Weiner.
+
 
 ## Capabilities
 
 These customizations are currently supported:
 
+- Remove all C2Rs (Cick-to-Runs) of any office product isntalled regardless of Product Version or Languages
+- Setup Customizations for Windows 11 i.e. Returning Start Menu to LEft, Right Click menu, Remove Widgets by default (Working for 24H2) , Remove Search Bar on first sign in.
 - Customize start menu layout.  By default it will apply a simple two-icon layout (similiar to the default one on Windows 10 Enterprise 1903).
 - Configure background image.  A custom theme is deployed with a background image; the default user profile is then configured to use this theme.  (Note that this won't work if the user is enabled for Enterprise State Roaming and has previously configured a background image.)
 - Set time zone.  The time zone will be set to the specified time zone name (Pacific Standard Time by default).
@@ -44,15 +47,14 @@ The detection rule should look for the existence of this file:
 Path: %ProgramData%\Microsoft\AutopilotBranding
 File or filder:  AutopilotBranding.ps1.tag
 
+For Origianl blog post for the OG himself..
 See https://oofhours.com/2020/05/18/two-for-one-updated-autopilot-branding-and-update-os-scripts/ for more information.
 
 ## Change history
 
-- 2023-09-23: Added logic to handle the Windows 11 Start menu proces using Start2.bin; Windows 10 will continue to use Layout.xml.  Added additional Windows 11 in-box apps to remove.
-- 2024-01-31: Added additional apps to remove, adding timestamps to log messages, cleaned up error logging.
-- 2024-04-27: Added logic to stop the Start menu from popping up each time a new user signs in.
-- 2024-12-26: Added support for removing FODs and disabling optional features.
+- 2025-03-22: Added MultiStep Break downs of each REgistry Tweak. Easy to follow along and Uncomment out any tweaks you don't want.
+- 2025-04-14: Added Removal of All Click To Runs (C2R) installed on a Machine.
 
 ## Suggestions?
 
-If you have suggestions on other customizations that would be useful, contact me at michael@oofhours.com.
+If you have suggestions on other customizations that would be useful, contact me at scottm@centennialit.com.
