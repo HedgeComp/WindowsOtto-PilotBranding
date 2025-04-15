@@ -57,4 +57,4 @@ See https://oofhours.com/2020/05/18/two-for-one-updated-autopilot-branding-and-u
 
 ## Suggestions?
 
-If you have suggestions on other customizations that would be useful, contact me at scottm@centennialit.com.
+If you have suggestions on other customizations that would be useful, contact me at scottm@centennialit.com Or Come find @Doctair in the GetRubix Discord.
