@@ -265,8 +265,7 @@ Log "Set Left Start Menu Alignment"
 reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarAl /t REG_DWORD /d 0 /f | Out-Null
 
 #STEP 18A: Right Click Context Menu restore
-reg add "HKU\Default\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f | Out-Null
-#reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+reg.exe add "HKU\Default\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve | Out-Null
 
 #STEP 18B: Show "Run as different User" in context menu
 reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v ShowRunAsDifferentUserInStart /t REG_DWORD /d 1 /f | Out-Null
