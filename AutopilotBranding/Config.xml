@@ -1,31 +1,87 @@
 <Config>
-  <TimeZone></TimeZone>
-  <RemoveApps>
-    <App>Microsoft.BingNews</App>
-    <App>Microsoft.BingWeather</App>
-    <App>Microsoft.DesktopAppInstaller</App>
-    <App>Microsoft.GamingApp</App>
-    <App>Microsoft.Getstarted</App>
-    <App>Microsoft.Messaging</App>
-    <App>Microsoft.Microsoft3DViewer</App>
-    <App>Microsoft.MicrosoftOfficeHub</App>
-    <App>Microsoft.MicrosoftSolitaireCollection</App>
-    <App>Microsoft.MixedReality.Portal</App>
-    <App>Microsoft.MSPaint</App>
-    <App>Microsoft.OneConnect</App>
-    <App>Microsoft.People</App>
-    <App>Microsoft.Print3D</App>
-    <App>Microsoft.SkypeApp</App>
-    <App>microsoft.windowscommunicationsapps</App>
-    <App>Microsoft.WindowsFeedbackHub</App>
-    <App>Microsoft.WindowsMaps</App>
-    <App>Microsoft.XboxApp</App>
-    <App>Microsoft.YourPhone</App>
-    <App>Microsoft.ZuneMusic</App>
-    <App>Microsoft.ZuneVideo</App>
-    <App>Clipchamp.Clipchamp</App>
-    <App>Microsoft.PowerAutomateDesktop</App>
-  </RemoveApps>
+<TimeZone>Eastern Standard Time</TimeZone>
+<RemoveApps>
+<App>*ActiproSoftwareLLC*</App>
+<App>*AdobeSystemsIncorporated.AdobePhotoshopExpress*</App>
+<App>*BubbleWitch3Saga*</App>
+<App>*CandyCrush*</App>
+<App>*DevHome*</App>
+<App>*Disney*</App>
+<App>*Dolby*</App>
+<App>*Duolingo-LearnLanguagesforFree*</App>
+<App>*EclipseManager*</App>
+<App>*Facebook*</App>
+<App>*Flipboard*</App>
+<App>*gaming*</App>
+<App>*Minecraft*</App>
+<App>*Office*</App>
+<App>*PandoraMediaInc*</App>
+<App>*Royal Revolt*</App>
+<App>*Speed Test*</App>
+<App>*Spotify*</App>
+<App>*Sway*</App>
+<App>*Twitter*</App>
+<App>*Wunderlist*</App>
+<App>AD2F1837.HPPrinterControl</App>
+<App>AppUp.IntelGraphicsExperience</App>
+<App>C27EB4BA.DropboxOEM*</App>
+<App>Disney.37853FC22B2CE</App>
+<App>DolbyLaboratories.DolbyAccess</App>
+<App>DolbyLaboratories.DolbyAudio</App>
+<App>E0469640.SmartAppearance</App>
+<App>Microsoft.549981C3F5F10</App>
+<App>Microsoft.AV1VideoExtension</App>
+<App>Microsoft.BingNews</App>
+<App>Microsoft.BingSearch</App>
+<App>Microsoft.BingWeather</App>
+<App>Microsoft.GetHelp</App>
+<App>Microsoft.Getstarted</App>
+<App>Microsoft.GamingApp</App>
+<App>Microsoft.Messaging</App>
+<App>Microsoft.Microsoft3DViewer</App>
+<App>Microsoft.MicrosoftEdge.Stable</App>
+<App>Microsoft.MicrosoftJournal</App>
+<App>Microsoft.MicrosoftOfficeHub</App>
+<App>Microsoft.MicrosoftSolitaireCollection</App>
+<App>Microsoft.MixedReality.Portal</App>
+<App>Microsoft.MPEG2VideoExtension</App>
+<App>Microsoft.News</App>
+<App>Microsoft.Office.Lens</App>
+<App>Microsoft.Office.OneNote</App>
+<App>Microsoft.Office.Sway</App>
+<App>Microsoft.OneConnect</App>
+<App>Microsoft.OneDriveSync</App>
+<App>Microsoft.People</App>
+<App>Microsoft.PowerAutomateDesktop</App>
+<App>Microsoft.PowerAutomateDesktopCopilotPlugin</App>
+<App>Microsoft.Print3D</App>
+<App>Microsoft.RemoteDesktop</App>
+<App>Microsoft.SkypeApp</App>
+<App>Microsoft.SysinternalsSuite</App>
+<App>Microsoft.Teams</App>
+<App>Microsoft.Windows.DevHome</App>
+<App>Microsoft.WindowsAlarms</App>
+<App>Microsoft.windowscommunicationsapps</App>
+<App>Microsoft.WindowsFeedbackHub</App>
+<App>Microsoft.WindowsMaps</App>
+<App>Microsoft.Xbox.TCUI</App>
+<App>Microsoft.XboxApp</App>
+<App>Microsoft.XboxGameOverlay</App>
+<App>Microsoft.XboxGamingOverlay</App>
+<App>Microsoft.XboxGamingOverlay_5.721.10202.0_neutral_~_8wekyb3d8bbwe</App>
+<App>Microsoft.XboxIdentityProvider</App>
+<App>Microsoft.XboxSpeechToTextOverlay</App>
+<App>Microsoft.ZuneMusic</App>
+<App>Microsoft.ZuneVideo</App>
+<App>MicrosoftCorporationII.MicrosoftFamily</App>
+<App>MicrosoftCorporationII.QuickAssist</App>
+<App>MicrosoftWindows.CrossDevice</App>
+<App>MirametrixInc.GlancebyMirametrix</App>
+<App>RealtimeboardInc.RealtimeBoard</App>
+<App>SpotifyAB.SpotifyMusic</App>
+<App>5A894077.McAfeeSecurity</App>
+<App>5A894077.McAfeeSecurity_2.1.27.0_x64__wafk5atnkzcwy</App>
+</RemoveApps>
   <OneDriveSetup>https://go.microsoft.com/fwlink/?linkid=844652</OneDriveSetup>
   <AddFeatures>
     <Feature>Microsoft.Windows.Sense.Client~~~~</Feature>
@@ -40,7 +96,6 @@
     <!-- If you want .NET 3.5, uncomment this one.
     <Feature>NetFX3~~~~</Feature>
     -->
-    <Feature>WMIC</Feature>
   </AddFeatures>
   <!-- This section defines a list of Optional Features to disable. Add the Name of the feature as returned by Get-WindowsOptionalFeature -->
   <DisableOptionalFeatures>
@@ -57,8 +112,8 @@
   <Language></Language>
   <!-- If you want to set a language, customize and reference this file: <Language>Language.xml</Language> -->
   <DefaultApps>Associations.xml</DefaultApps>
-  <RegisteredOwner>Autopilot User</RegisteredOwner>
-  <RegisteredOrganization>Contoso</RegisteredOrganization>
+  <RegisteredOwner>Dorken</RegisteredOwner>
+  <RegisteredOrganization>Dorken Systems</RegisteredOrganization>
   <OEMInfo>
     <Manufacturer>Contoso</Manufacturer>
     <Model>PC</Model>
