@@ -271,10 +271,10 @@ reg.exe add "HKU\Default\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905b
 reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v ShowRunAsDifferentUserInStart /t REG_DWORD /d 1 /f | Out-Null
 
 # STEP 19: Revove Bing
-Log "Remove Bing from Start Menu"
+Log "Enable Run as otherUSer"
 reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /f | Out-Null
 reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v ShowRunAsDifferentUserInStart /t REG_DWORD /d 1 /f | Out-Null
-reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v DisableSearchBoxSuggestions /t REG_DWORD /d 1 /f | Out-Null
+#reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v DisableSearchBoxSuggestions /t REG_DWORD /d 1 /f | Out-Null
 
 #STEP 20: REmove adds and suggestions in Windows where possible.
 Log " Disable Tips Recommendations for new Apps"
