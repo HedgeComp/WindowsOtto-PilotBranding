@@ -268,13 +268,14 @@ reg.exe add "HKU\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Adva
 reg.exe add "HKU\Default\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve | Out-Null
 
 #STEP 18B: Show "Run as different User" in context menu
-reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v ShowRunAsDifferentUserInStart /t REG_DWORD /d 1 /f | Out-Null
-
-# STEP 19: Revove Bing
 Log "Enable Run as otherUSer"
 reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /f | Out-Null
 reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v ShowRunAsDifferentUserInStart /t REG_DWORD /d 1 /f | Out-Null
-#reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v DisableSearchBoxSuggestions /t REG_DWORD /d 1 /f | Out-Null
+
+#STEP 19: Stop Bing Search in results of TaskBar
+
+Log "Bing Search Disabled in Taskbar"
+reg.exe add "HKU\Default\Software\Policies\Microsoft\Windows\Explorer" /v BingSearchEnabled /t REG_DWORD /d 0 /f | Out-Null
 
 #STEP 20: REmove adds and suggestions in Windows where possible.
 Log " Disable Tips Recommendations for new Apps"
