@@ -1,6 +1,9 @@
 # Otto-Pilot Branding
 
 This is a custom fork of Micheal Neihaus's amazing script with added bonuses from things I've learned from Community Pros like Sir Andy Talor and Steve Weiner.
+
+![Untitled(1)(1)](https://github.com/user-attachments/assets/d4f91652-db5b-4230-b1f1-5b9ac79db853)
+
 This repository contains a sample PowerShell script that can be packaged into an Intune Win32 app to customize Windows 10 and 11 devices via Windows Autopilot
 (although there's no reason it can't be used with other deployment processes, e.g. MDT or ConfigMgr).
 
