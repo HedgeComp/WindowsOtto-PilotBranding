@@ -1,6 +1,6 @@
 # Otto-Pilot Branding
 
-This is a custom fork of Micheal Neihaus's amazing script with added bonuses from things I've learned from Community Pros like Sir Andy Talor and Steve Weiner.
+This is a custom fork of Micheal Neihaus's amazing script with added bonuses from things I've learned from Community Pros like Sir Andy Taylor and Steve Weiner.
 
 ![Untitled(1)(1)](https://github.com/user-attachments/assets/d4f91652-db5b-4230-b1f1-5b9ac79db853)
 
