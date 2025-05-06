@@ -1,8 +1,13 @@
+<!-- This default Config will unisntall all Remove All Click-to-Runs (C2Rs) for Office and other related applications, regardless of Language or Product ID -->
 <Configuration>
   <Display Level="None" AcceptEULA="True" />
   <Property Name="FORCEAPPSHUTDOWN" Value="True" />
   <Remove>
-    <Product ID="O365HomePremRetail"/>
-    <Product ID="OneNoteFreeRetail"/>
+<!-- Delete or comment out the line below if you do not want to remove All C2Rs -->
+   <Remove All="TRUE">
+<!-- To removle only specific Product IDs lookup them up here : https://learn.microsoft.com/en-us/microsoft-365/troubleshoot/installation/product-ids-supported-office-deployment-click-to-run 
+and place them one line at a time. See examples below -->
+<!-- <Product ID="O365HomePremRetail"/>  -->
+<!-- <Product ID="OneNoteFreeRetail"/> -->
   </Remove>
 </Configuration>
