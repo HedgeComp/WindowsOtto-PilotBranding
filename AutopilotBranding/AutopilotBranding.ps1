@@ -362,7 +362,8 @@ $xml | Out-File -FilePath "C:\ProgramData\Microsoft\AutopilotBranding\o365.xml"
 Log "Downloading ODT"
 ##Download the ODT from Git. If you are forking you can publish your own or addjust code below to download the latest.
 $ProgressPreference = 'SilentlyContinue'
-$odturl = "https://github.com/HedgeComp/WindowsOtto-PilotBranding/raw/main/ODT/odt.exe"
+##Download the Latest ODT URI obtained from Stealthpuppy's Evergreen PS Module
+$odturl = "https://officecdn.microsoft.com/pr/wsus/setup.exe"
 $odtdestination = "C:\ProgramData\Microsoft\AutopilotBranding\odt.exe"
 Invoke-WebRequest -Uri $odturl -OutFile $odtdestination -Method Get -UseBasicParsing
 $ProgressPreference = 'Continue'
