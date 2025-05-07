@@ -55,7 +55,7 @@ See https://oofhours.com/2020/05/18/two-for-one-updated-autopilot-branding-and-u
 
 ## Change history
 
-- 2025-03-22: Added MultiStep Break downs of each REgistry Tweak. Easy to follow along and Uncomment out any tweaks you don't want.
+- 2025-03-22: Added MultiStep Break downs of each REgistry Tweak. Easy to follow along and to Comment out any tweaks you don't want.
 - 2025-04-14: Added Removal of All Click To Runs (C2R) installed on a Machine.
 
 ## Suggestions?
