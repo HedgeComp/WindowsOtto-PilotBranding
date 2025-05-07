@@ -89,7 +89,6 @@ function Remove-OfficeInstalls {
     #Remove the ODT setup file
     Log "Removing ODT setup files"
     Remove-Item -Path $ODTInstallFile -Force
-    Remove-Item -Path $ConfigXml -Force
     Log "ODT setup files removed"
 }
 
