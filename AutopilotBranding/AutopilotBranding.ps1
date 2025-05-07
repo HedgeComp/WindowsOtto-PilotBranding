@@ -68,6 +68,7 @@ function Remove-OfficeInstalls {
     #Download ODT from Evergreen link
     $ODTUrl = 'https://officecdn.microsoft.com/pr/wsus/setup.exe'
     $ODTInstallFile = "$($env:ProgramData)\Microsoft\AutopilotBranding\odt.exe"
+    $xmlPath = "$($PSScriptRoot\)MS365.xml"
     Log "Downloading Office Deployment Toolkit from $ODTUrl to $ODTInstallFile"
     $OriginalVerbosePreference = $VerbosePreference
     $VerbosePreference = 'SilentlyContinue'
@@ -75,11 +76,11 @@ function Remove-OfficeInstalls {
     $VerbosePreference = $OriginalVerbosePreference
 
     # Run setup.exe with config.xml and modify xml file to download to $OfficePath
-    Log "Loading configuration: $($installFolder)MS365.xml"
-    [Xml]$ConfigXml = Get-Content "$($installFolder)MS365.xml"
+    Log "Loading configuration: $($PSScriptRoot\)MS365.xml"
+    #[Xml]$ConfigXml = Get-Content "$($PSScriptRoot\)MS365.xml"
        
     $proc = Start-Process -FilePath $ODTInstallFile `
-              -ArgumentList "/configure `"$ConfigXml`"" `
+              -ArgumentList "/configure `"$xmPath`"" `
               -WindowStyle Hidden `
               -Wait `
               -PassThru
