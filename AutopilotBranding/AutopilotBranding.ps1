@@ -63,6 +63,38 @@ function Check-NuGetProvider {
     
 }
 
+function Remove-OfficeInstalls {
+
+    #Download ODT from Evergreen link
+    $ODTUrl = 'https://officecdn.microsoft.com/pr/wsus/setup.exe'
+    $ODTInstallFile = "$($env:ProgramData)\Microsoft\AutopilotBranding\odt.exe"
+    Log "Downloading Office Deployment Toolkit from $ODTUrl to $ODTInstallFile"
+    $OriginalVerbosePreference = $VerbosePreference
+    $VerbosePreference = 'SilentlyContinue'
+    Invoke-WebRequest -Uri $ODTUrl -OutFile $ODTInstallFile -Method Get -UseBasicParsing
+    $VerbosePreference = $OriginalVerbosePreference
+
+    # Run setup.exe with config.xml and modify xml file to download to $OfficePath
+    Log "Loading configuration: $($installFolder)MS365.xml"
+    [Xml]$ConfigXml = Get-Content "$($installFolder)MS365.xml"
+       
+    $proc = Start-Process -FilePath $ODTInstallFile `
+              -ArgumentList "/configure `"$ConfigXml`"" `
+              -WindowStyle Hidden `
+              -Wait `
+              -PassThru
+    $proc | Wait-Process 
+    
+    #Remove the ODT setup file
+    Log "Removing ODT setup files"
+    Remove-Item -Path $ODTInstallFile -Force
+    Remove-Item -Path $ConfigXml -Force
+    Log "ODT setup files removed"
+}
+
+
+
+
 # Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
 
