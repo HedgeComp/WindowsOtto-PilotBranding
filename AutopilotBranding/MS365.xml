@@ -7,7 +7,7 @@ Individual O365 Product IDs can be found here:https://learn.microsoft.com/en-us/
 	<Property Name="FORCEAPPSHUTDOWN" Value="True"/>
 <!-- Delete or comment out the Start Tag '<Remove ALL="TRUE">' if you do not want to remove All C2Rs -->
 	<Remove All="TRUE">
-<!-- ### To removle only specific Product IDs, first uncomment the Start Tag '<Remove>' below. ### -->
+<!-- ### To remove only specific Product IDs, first uncomment the Start Tag '<Remove>' below. ### -->
 <!-- <Remove> -->
 <!-- ### Then place the Product IDs on one line at a time. See examples below ### -->
 <!-- <Product ID="O365HomePremRetail"/>  -->
