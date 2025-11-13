@@ -362,13 +362,19 @@ try
 	}
 
 	# STEP 8A: Attempt to Donwload and install Latest Edge for Business MSI from Evergreen URL
-	if ($config.Config.SkipEdgeUpdate -ine "true") {
+	if ($config.Config.SkipUpdate -ine "true") {
 
 		if ($env:PROCESSOR_ARCHITECTURE -ine "ARM64") {
-		$client = new-object System.Net.WebClient
-		$dest = "$($env:TEMP)\MicrosoftEdgeEnterpriseX64.msi"
-		$url = $config.Config.EdgeBusinessMSI
+			$dest = "$($env:TEMP)\MicrosoftEdgeEnterpriseX64.msi"
+			$url = $config.Config.EdgeBusinessMSI
+		}	
+		else {
+			$dest = "$($env:TEMP)\MicrosoftEdgeEnterpriseARM64.msi"
+			$url = $config.Config.EdgeBusinessARM
+		}
+		
 		Log "Downloading Latest Edge for Business: $url"
+		$client = new-object System.Net.WebClient
 		$client.DownloadFile($url, $dest)
 		
 		# Edge Version is buried in Comments of MSI. Parse the first 13 charaters to pull out Version number.
@@ -392,8 +398,7 @@ try
 		} else {
 			Log "Edge for Business Updated"
 		}
-	}
-	}
+	}	
 
 	# STEP 8B: Clean up any OEM-added bookmarks from the default user profile
 	$bookmarks = "C:\Users\Default\AppData\Local\Microsoft\Edge\User Data\Default\Bookmarks"
