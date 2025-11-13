@@ -363,7 +363,8 @@ try
 
 	# STEP 8A: Attempt to Donwload and install Latest Edge for Business MSI from Evergreen URL
 	if ($config.Config.SkipEdgeUpdate -ine "true") {
-		
+
+		if ($env:PROCESSOR_ARCHITECTURE -ine "ARM64") {
 		$client = new-object System.Net.WebClient
 		$dest = "$($env:TEMP)\MicrosoftEdgeEnterpriseX64.msi"
 		$url = $config.Config.EdgeBusinessMSI
@@ -391,7 +392,7 @@ try
 		} else {
 			Log "Edge for Business Updated"
 		}
-
+	}
 	}
 
 	# STEP 8B: Clean up any OEM-added bookmarks from the default user profile
