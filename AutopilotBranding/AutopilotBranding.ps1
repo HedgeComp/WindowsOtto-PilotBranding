@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 3.3.1
+.VERSION 3.4
 .GUID 39efc9c5-7b51-4d1f-b650-0f3818e5327a
 .AUTHOR Michael Niehaus
 .COMPANYNAME
@@ -140,7 +140,6 @@ try
 	[Xml]$config = Get-Content "$($installFolder)Config.xml"
 
 	# PREP: Load the default user registry
-	Log "Loading Defualt User Registry Hive NTUSER.DAT"
 	reg.exe load HKLM\TempUser "C:\Users\Default\NTUSER.DAT" | Out-Null
 
 	# STEP 1: Apply a custom start menu and taskbar layout
@@ -318,36 +317,12 @@ try
 		$proc.WaitForExit()
 		Log "OneDriveSetup exit code: $($proc.ExitCode)"
 
-
-		Log "Making sure the Defaultuser Run key exists"
-		$RegRunPath = "HKLM:\TempUser\Software\Microsoft\Windows\CurrentVersion\Run"
-		if (!(Test-Path -Path $RegRunPath)) {
-			Log "Run Key not found!.. Will create it now."
-			& reg.exe add "HKLM\TempUser\Software\Microsoft\Windows\CurrentVersion\Run" /f /reg:64 2>&1 | Out-Null	
-			Log "Run Key created"	
-		}
-        else{ 
-            Log "Run Key Already Exists"
-        }
-
-		$RunValueName = "OneDriveSetup"
-		Log "Looking for per-user OneDriveSetup REG_SZ"
-		# Check for the existence of string OneDriveSetup which should have the value ( C:\Windows\System32\OneDriveSetup.exe /thfirstsetup )
-		# This is creating multiple Onedrives launching at sign. Remove as no longer needed once Machine-Wide installer is run.
-		if (Get-ItemProperty -Path $RegRunPath -Name $RunValueName -ErrorAction SilentlyContinue) {
-    		Log "Per-User '$RunValueName'  still exists. Cleaning up."
-			& reg.exe delete "HKLM\TempUser\Software\Microsoft\Windows\CurrentVersion\Run" /v "OneDriveSetup" /f /reg:64 2>&1 | Out-Null
-			Log "Per-User '$RunValueName' removed."
-		}
-		else {
-    		 Log "'$RunValueName' per-user not found. This is Good."
-		}
-
-		#OneDriveSetup should set these keys but can take an additional reboot after copying binaries. This should jump start OneDrive at first User Login.
-		Log "Setting OneDrive to Autostart from Machine-Wide location"
-		$OnedrivePath = '"C:\Program Files\Microsoft OneDrive\OneDrive.exe" /background'
-		#& reg.exe add "HKLM\TempUser\Software\Microsoft\Windows\CurrentVersion\Run" /v 'OneDrive' /t REG_SZ /d $OnedrivePath /f /reg:64 2>&1 #| Out-Null
-        New-Itemproperty -Path $RegRunPath -Name 'OneDrive' -Value $OnedrivePath -PropertyType String -Force | Out-Null
+		Log "Making sure the Run key exists"
+		& reg.exe add "HKLM\TempUser\Software\Microsoft\Windows\CurrentVersion\Run" /f /reg:64 2>&1 | Out-Null
+		& reg.exe query "HKLM\TempUser\Software\Microsoft\Windows\CurrentVersion\Run" /reg:64 2>&1 | Out-Null
+		Log "Changing OneDriveSetup value to point to the machine wide EXE"
+		# Quotes are so problematic, we'll use the more risky approach and hope garbage collection cleans it up later
+		Set-ItemProperty -Path "HKLM:\TempUser\Software\Microsoft\Windows\CurrentVersion\Run" -Name OneDriveSetup -Value """C:\Program Files\Microsoft OneDrive\Onedrive.exe"" /background" | Out-Null
 	}
 
 	# STEP 8: Don't let Edge create a desktop shortcut (roams to OneDrive, creates mess)
@@ -400,17 +375,6 @@ try
 		Log "Removing Edge bookmarks folder from default profile"
 		Remove-Item $bookmarks -Force
 	}
-	$Bookmarksregpath = "HKLM:\SOFTWARE\Microsoft\MicrosoftEdge\Main\FavoriteBarItems"
-	if (test-path $Bookmarksregpath){
-	Remove-Item -path $Bookmarksregpath -Recurse -Force
-	Log "OEM Edge Bookmarks were detected and removed successfully"
-	}else{
-	Log "No OEM Edge Booksmarks were detected"
-	}
-
-
-
-	
 
 	# STEP 9: Add language packs
 	if (Test-Path "$($installFolder)LPs") {
@@ -509,32 +473,17 @@ try
 	}
 
 	# STEP 14: Configure OEM branding info
-	
 	if ($config.Config.OEMInfo) {
 		Log "Configuring OEM branding info"
-		$OEMpath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation'
-		
-		#& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v Manufacturer /t REG_SZ /d "$($config.Config.OEMInfo.Manufacturer)" /f /reg:64 2>&1 #| Out-Null
-		New-ItemProperty -Path $OEMpath -Name 'Manufacturer' -PropertyType String -Value $config.Config.OEMInfo.Manufacturer -Force | Out-Null
-		#& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v Model /t REG_SZ /d "$($config.Config.OEMInfo.Model)" /f /reg:64 2>&1 #| Out-Null
-		New-ItemProperty -Path $OEMpath -Name 'Model' -PropertyType String -Value $config.Config.OEMInfo.Model -Force | Out-Null
-		#& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v SupportPhone /t REG_SZ /d "$($config.Config.OEMInfo.SupportPhone)" /f /reg:64 2>&1 #| Out-Null
-		New-ItemProperty -Path $OEMpath -Name 'SupportPhone' -PropertyType String -Value $config.Config.OEMInfo.SupportPhone -Force | Out-Null
-		#& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v SupportHours /t REG_SZ /d "$($config.Config.OEMInfo.SupportHours)" /f /reg:64 2>&1 #| Out-Null
-		New-ItemProperty -Path $OEMpath -Name 'SupportHours' -PropertyType String -Value $config.Config.OEMInfo.SupportHours -Force | Out-Null
-		#& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v SupportURL /t REG_SZ /d "$($config.Config.OEMInfo.SupportURL)" /f /reg:64 2>&1 #| Out-Null
-		New-ItemProperty -Path $OEMpath -Name 'SupportURL' -PropertyType String -Value $config.Config.OEMInfo.SupportURL -Force | Out-Null
-		
-	if (Test-Path "$installFolder\$($config.Config.OEMInfo.Logo)") { 
-		Log "BMP Logo Found copying.."
-    	Copy-Item "$installFolder\$($config.Config.OEMInfo.Logo)" "C:\Windows\$($config.Config.OEMInfo.Logo)" -Force 
-		New-ItemProperty -Path $OEMpath -Name 'Logo' -PropertyType String -Value $config.Config.OEMInfo.Logo -Force | Out-Null
-		}
-		#Copy-Item "$installFolder\$($config.Config.OEMInfo.Logo)" "C:\Windows\$($config.Config.OEMInfo.Logo)" -Force
-		#& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v Logo /t REG_SZ /d "C:\Windows\$($config.Config.OEMInfo.Logo)" /f /reg:64 2>&1 #| Out-Null
+
+		& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v Manufacturer /t REG_SZ /d "$($config.Config.OEMInfo.Manufacturer)" /f /reg:64 2>&1 | Out-Null
+		& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v Model /t REG_SZ /d "$($config.Config.OEMInfo.Model)" /f /reg:64 2>&1 | Out-Null
+		& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v SupportPhone /t REG_SZ /d "$($config.Config.OEMInfo.SupportPhone)" /f /reg:64 2>&1 | Out-Null
+		& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v SupportHours /t REG_SZ /d "$($config.Config.OEMInfo.SupportHours)" /f /reg:64 2>&1 | Out-Null
+		& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v SupportURL /t REG_SZ /d "$($config.Config.OEMInfo.SupportURL)" /f /reg:64 2>&1 | Out-Null
+		Copy-Item "$installFolder\$($config.Config.OEMInfo.Logo)" "C:\Windows\$($config.Config.OEMInfo.Logo)" -Force
+		& reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v Logo /t REG_SZ /d "C:\Windows\$($config.Config.OEMInfo.Logo)" /f /reg:64 2>&1 | Out-Null
 	}
-
-
 
 	# STEP 15A: Force Enterprise SKU
 	if ($config.Config.SkipEnterpriseGVLK -ine "true") {
@@ -647,11 +596,6 @@ try
 		Log 'Skipping APv2 tweaks'
 	}
 
-	# CLEANUP: Unload default user registry
-	Log "Unloading Default user Registry"
-	[GC]::Collect()
-	reg.exe unload HKLM\TempUser | Out-Null
-	
 	# STEP 20: Updates & Inbox-App script
 	if ($config.Config.SkipUpdates -ne 'true') {
 		try {
@@ -686,15 +630,58 @@ try
 
 	# STEP 21: Skip FSIA and turn off delayed desktop switch
 	if ($config.Config.SkipShowDesktopFaster -ine "true") {
-		Log "Skipping FSIA and turning off delayed desktop switch"
 		$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
 		New-ItemProperty -Path $registryPath -Name "EnableFirstLogonAnimation" -Value 0 -PropertyType DWord -Force | Out-Null
 		New-ItemProperty -Path $registryPath -Name "DelayedDesktopSwitchTimeout" -Value 0 -PropertyType DWord -Force | Out-Null
 	}
+
+	# STEP 22: Remove All Office Products
+	## Remove All Office Products
+	if ($config.Config.RemoveOffice -ine "true") {
+	Log  "Remove All Office Products Selected"
+## The XML below will Remove All Microsoft C2Rs ( Click-to-Runs), regardless of Product ID and Languages. To remove All Comment out or remove the XML block between Start and End above. Then Uncomment the XML below.
+$xml = @"
+<Configuration>
+  <Display Level="None" AcceptEULA="True" />
+  <Property Name="FORCEAPPSHUTDOWN" Value="True" />
+  <Remove All="TRUE">
+  </Remove>
+  <RemoveMSI />
+</Configuration>
+"@
+## Remove All Office Products XML End ##
+
+	# Define temp folder and file paths
+	$tempFolder     = $env:TEMP
+	$xmlPath        = Join-Path $tempFolder 'o365.xml'
+	$odtPath        = Join-Path $tempFolder 'setup.exe'
+
+	# Write XML to temp folder
+	$xml | Out-File -FilePath $xmlPath -Encoding UTF8
+	Log "Downloading lastet ODT"
+	# Download the Latest ODT into temp folder. URI obtained from Stealthpuppy's Evergreen Project
+	$odtUrl = 'https://officecdn.microsoft.com/pr/wsus/setup.exe'
+	Invoke-WebRequest -Uri $odtUrl `
+                  -OutFile $odtPath `
+                  -UseBasicParsing
+
+	Log "Running ODT"
+	# Run the ODT from temp, pointing at the XML also in temp
+	$proc = Start-Process -FilePath $odtPath `
+              -ArgumentList "/configure `"$xmlPath`"" `
+              -WindowStyle Hidden `
+              -Wait `
+              -PassThru
+	$proc | Wait-Process
+	Log "ODT exit code: $($proc.ExitCode)"	
+	} 
+
 } catch {
 	Log "Unhandled exception: $_"
 } finally {
-Log "All Steps Completed"
+	# CLEANUP: Unload default user registry
+	[GC]::Collect()
+	reg.exe unload HKLM\TempUser | Out-Null
 }
 
 $stopUtc = [datetime]::UtcNow
