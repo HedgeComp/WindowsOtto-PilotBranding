@@ -637,7 +637,7 @@ try
 
 	# STEP 22: Remove All Office Products
 	## Remove All Office Products
-	if ($config.Config.RemoveOffice -ine "true") {
+	if ($config.Config.SkipRemoveOffice -ine "true") {
 	Log  "Remove All Office Products Selected"
 ## The XML below will Remove All Microsoft C2Rs ( Click-to-Runs), regardless of Product ID and Languages. To remove All Comment out or remove the XML block between Start and End above. Then Uncomment the XML below.
 $xml = @"
