@@ -57,6 +57,7 @@
     <App>MicrosoftCorporationII.MicrosoftFamily</App>
     <App>MicrosoftTeams</App>
     <App>MSTeams</App>
+    <App>Microsoft.M365Companions</App>
     <!-- Microsoft Copilot -->
     <App>9NHT9RB2F4HD</App>
   </RemoveApps>
