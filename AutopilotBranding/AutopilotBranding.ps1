@@ -269,6 +269,14 @@ try
 		Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Dsh"  -Name "AllowNewsAndInterests" -Value 0
 
 	}
+	# STEP 4C: Set Search Bar to Icon Only via RunOnce
+	if ($config.Config.SkipSetSearchIcon -ine "true") {
+
+ 	Log "Setting Searchbar Icon via RunOnce"
+	& reg.exe add "HKLM\TempUser\Software\Microsoft\Windows\CurrentVersion\RunOnce" /f | Out-Null # Ensure path exists
+	$RunOnceCommand = 'reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Search /t REG_DWORD /v SearchboxTaskbarMode /d 1 /f'
+	& reg.exe add "HKLM\TempUser\Software\Microsoft\Windows\CurrentVersion\RunOnce" /v 'SetSearchIconOnly' /t REG_SZ /d $RunOnceCommand /f | Out-Null
+	}
 
 	# STEP 5: Set time zone (if specified)
 	if ($config.Config.TimeZone) {

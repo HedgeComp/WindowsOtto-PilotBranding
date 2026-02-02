@@ -19,6 +19,7 @@
   <SkipDisableWidgets>true</SkipDisableWidgets> 
   <SkipChromeConfig>false</SkipChromeConfig>
   <SkipRemoveOffice>false</SkipRemoveOffice>
+  <SkipSetSearchIcon>false</SkipSetSearchIcon>
   <!-- Settings for various items-->
   <TimeZone></TimeZone>
   <RemoveApps>
