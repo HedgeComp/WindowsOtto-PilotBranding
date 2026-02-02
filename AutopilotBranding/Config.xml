@@ -18,7 +18,7 @@
    <!-- Only set 'SkipDisableWidgets' to false if you want to completely disable Widgets-->
   <SkipDisableWidgets>true</SkipDisableWidgets> 
   <SkipChromeConfig>false</SkipChromeConfig>
-  
+  <SkipSetSearchIcon>false</SkipSetSearchIcon>
   <!-- Settings for various items-->
   <TimeZone></TimeZone>
   <RemoveApps>
