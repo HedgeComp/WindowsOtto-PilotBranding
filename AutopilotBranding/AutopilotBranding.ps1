@@ -673,9 +673,9 @@ try
 		Check-NuGetProvider 
 
 		#Log 'Installing WinGet.Client module'
-		Install-Module -Name Microsoft.WinGet.Client -Force -Scope AllUsers -Repository PSGallery | Out-Null
-		Log 'Installing Lastest Winget package and dependencies'
-		Repair-WinGetPackageManager -Force -Latest | Out-Null  #-Allusers not supported in System Context so was removed.
+		#Install-Module -Name Microsoft.WinGet.Client -Force -Scope AllUsers -Repository PSGallery | Out-Null
+		#Log 'Installing Lastest Winget package and dependencies'
+		#Repair-WinGetPackageManager -Force -Latest | Out-Null  #-Allusers not supported in System Context so was removed.
 		
 		#Permalink for latest supported x64 version of vc_redist.x64
 		$VCppRedistributable_Url = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
@@ -684,6 +684,9 @@ try
 		
 		Invoke-WebRequest -uri $VCppRedistributable_Url -outfile $VCppRedistributable_Path -UseBasicParsing
 		Start-Process -FilePath $VCppRedistributable_Path -ArgumentList "/install", "/quiet", "/norestart" -Wait
+
+		#install Latest Winget and its dependencies.
+		Install-WinGetLatest
 		
 		#$wingetExe = (Get-ChildItem -Path 'C:\Program Files\WindowsApps' -Recurse -Filter 'winget.exe' -ErrorAction SilentlyContinue).FullName
 		#Look for Winget.exe in the C:\Program Files\WindowsApps\Microsoft.DesktopAppInstaller_* Folder
