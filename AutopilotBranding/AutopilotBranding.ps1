@@ -75,6 +75,96 @@ function Check-NuGetProvider {
     
 }
 
+function Install-WinGetLatest {
+    [CmdletBinding()]
+    param()
+
+    process {
+        # 1. Setup Environment
+        $repo = "microsoft/winget-cli"
+        $apiUrl = "https://api.github.com/repos/$repo/releases/latest"
+        $tempDir = Join-Path $env:TEMP "WinGetDependencies"
+        $zipPath = Join-Path $tempDir "Dependencies.zip"
+        $wingetPath = Join-Path $tempDir "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+        $extractPath = Join-Path $tempDir "Extracted"
+
+        Write-Host "Starting WinGet installation process..." -ForegroundColor Cyan
+
+        # Ensure a clean workspace
+        if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
+        New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
+
+        try {
+            # 2. Identify and Download the Dependency Zip
+            Write-Host "Fetching latest release data from GitHub..." -ForegroundColor Gray
+            $release = Invoke-RestMethod -Uri $apiUrl
+            $latestVersion = $release.tag_name
+            Write-Host "Latest Version: $latestVersion" -ForegroundColor Yellow
+
+            $asset = $release.assets | Where-Object { $_.name -eq "DesktopAppInstaller_Dependencies.zip" } | Select-Object -First 1
+
+            if (-not $asset) {
+                Write-Error "Could not find 'DesktopAppInstaller_Dependencies.zip' in the latest release."
+                return
+            }
+
+            Write-Host "Downloading $($asset.name)..." -ForegroundColor Cyan
+            Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zipPath
+
+            # 3. Extract Contents
+            Write-Host "Extracting dependencies..." -ForegroundColor Cyan
+            Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+
+            # 4. Target Architecture and Installation
+            $arch = $env:PROCESSOR_ARCHITECTURE 
+            if ($arch -eq "AMD64") { $arch = "x64" }
+            Write-Host "System Architecture detected: $arch" -ForegroundColor Gray
+
+            # Find all Appx/Msix files, prioritizing the specific architecture folder
+            $filesToInstall = Get-ChildItem -Path $extractPath -Recurse -Include *.appx, *.msix, *.appxbundle, *.msixbundle | 
+                Where-Object { $_.FullName -match $arch -or $_.FullName -notmatch "x86|arm|arm64" }
+
+            # 5. Execute Dependency Installation
+            foreach ($file in $filesToInstall) {
+                Write-Host "Installing Dependency: $($file.Name)" -ForegroundColor Green
+                try {
+                    Add-AppxPackage -Path $file.FullName -ForceApplicationShutdown -ErrorAction Stop
+                }
+                catch {
+                    Write-Warning "Skipped or failed: $($file.Name). It may already be installed."
+                }
+            }
+
+            # 6. Download and Install WinGet itself
+            Write-Host "Downloading Latest winget-cli release..." -ForegroundColor Cyan
+            Invoke-WebRequest "https://aka.ms/getwinget" -OutFile $wingetPath
+            
+            Write-Host "Installing Latest Winget-cli..." -ForegroundColor Green
+            Add-AppxPackage -Path $wingetPath
+
+            # Verify installation
+            $wingetVer = & "winget.exe" --version
+            Write-Host "WinGet installation successful. Version: $wingetVer" -ForegroundColor Cyan
+        }
+        catch {
+            Write-Error "An error occurred during installation: $($_.Exception.Message)"
+        }
+        finally {
+            # Clean up
+            if (Test-Path $tempDir) {
+                Write-Host "Cleaning up temporary files..." -ForegroundColor Gray
+                Remove-Item $tempDir -Recurse -Force
+            }
+        }
+    }
+}
+
+# Example usage:
+# Install-WinGetLatest
+
+
+
+
 # Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
 
