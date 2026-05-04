@@ -88,7 +88,7 @@ function Install-WinGetLatest {
         $wingetPath = Join-Path $tempDir "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
         $extractPath = Join-Path $tempDir "Extracted"
 
-       Log "Starting WinGet installation process..." -ForegroundColor Cyan
+       Log "Starting WinGet installation process..." 
 
         # Ensure a clean workspace
         if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
@@ -96,10 +96,10 @@ function Install-WinGetLatest {
 
         try {
             # 2. Identify and Download the Dependency Zip
-           Log "Fetching latest release data from GitHub..." -ForegroundColor Gray
+           Log "Fetching latest release data from GitHub..."
             $release = Invoke-RestMethod -Uri $apiUrl
             $latestVersion = $release.tag_name
-           Log "Latest Version: $latestVersion" -ForegroundColor Yellow
+           Log "Latest Version: $latestVersion"
 
             $asset = $release.assets | Where-Object { $_.name -eq "DesktopAppInstaller_Dependencies.zip" } | Select-Object -First 1
 
@@ -108,17 +108,17 @@ function Install-WinGetLatest {
                 return
             }
 
-           Log "Downloading $($asset.name)..." -ForegroundColor Cyan
+           Log "Downloading $($asset.name)..." 
             Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zipPath
 
             # 3. Extract Contents
-           Log "Extracting dependencies..." -ForegroundColor Cyan
+           Log "Extracting dependencies..."
             Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
 
             # 4. Target Architecture and Installation
             $arch = $env:PROCESSOR_ARCHITECTURE 
             if ($arch -eq "AMD64") { $arch = "x64" }
-           Log "System Architecture detected: $arch" -ForegroundColor Gray
+           Log "System Architecture detected: $arch"
 
             # Find all Appx/Msix files, prioritizing the specific architecture folder
             $filesToInstall = Get-ChildItem -Path $extractPath -Recurse -Include *.appx, *.msix, *.appxbundle, *.msixbundle | 
@@ -126,7 +126,7 @@ function Install-WinGetLatest {
 
             # 5. Execute Dependency Installation
             foreach ($file in $filesToInstall) {
-               Log "Installing Dependency: $($file.Name)" -ForegroundColor Green
+               Log "Installing Dependency: $($file.Name)"
                 try {
                     Add-AppxPackage -Path $file.FullName -ForceApplicationShutdown -ErrorAction Stop
                 }
@@ -136,15 +136,15 @@ function Install-WinGetLatest {
             }
 
             # 6. Download and Install WinGet itself
-           Log "Downloading Latest winget-cli release..." -ForegroundColor Cyan
+           Log "Downloading Latest winget-cli release..."
             Invoke-WebRequest "https://aka.ms/getwinget" -OutFile $wingetPath
             
-           Log "Installing Latest Winget-cli..." -ForegroundColor Green
+           Log "Installing Latest Winget-cli..."
             Add-AppxPackage -Path $wingetPath
 
             # Verify installation
             $wingetVer = & "winget.exe" --version
-           Log "WinGet installation successful. Version: $wingetVer" -ForegroundColor Cyan
+           Log "WinGet installation successful. Version: $wingetVer"
         }
         catch {
             Write-Error "An error occurred during installation: $($_.Exception.Message)"
@@ -152,7 +152,7 @@ function Install-WinGetLatest {
         finally {
             # Clean up
             if (Test-Path $tempDir) {
-               Log "Cleaning up temporary files..." -ForegroundColor Gray
+               Log "Cleaning up temporary files..."
                 Remove-Item $tempDir -Recurse -Force
             }
         }
