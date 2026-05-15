@@ -623,8 +623,19 @@ try
 
 		#Log 'Installing WinGet.Client module'
 		Install-Module -Name Microsoft.WinGet.Client -Force -Scope AllUsers -Repository PSGallery | Out-Null
-		Log 'Installing Lastest Winget package and dependencies'
-		Repair-WinGetPackageManager -Force -Latest | Out-Null  #-Allusers not supported in System Context so was removed.
+
+		Write-Log "Installing Latest Winget package and dependencies" -Level Info
+	try {
+			Repair-WinGetPackageManager -Force -Latest | Out-Null
+		}
+	catch {
+		Log "Winget Repair Failed in system context again. Check Winget Github Issues for more info"
+	}
+
+
+		
+		#Log 'Installing Lastest Winget package and dependencies'
+		#Repair-WinGetPackageManager -Force -Latest | Out-Null  #-Allusers not supported in System Context so was removed.
 		
 		#Permalink for latest supported x64 version of vc_redist.x64
 		$VCppRedistributable_Url = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
